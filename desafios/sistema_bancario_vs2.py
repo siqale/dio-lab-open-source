@@ -6,11 +6,12 @@ print("========================= Escolha uma opção abaixo: ===================
 menu = """
 [a] Abrir Conta
 [c] Cadastrar Correntista
-[l] Listagem de Correntistas
 [d] Depositar
 [s] Sacar
 [e] Extrato
 [q] Sair
+[1] Listar Correntistas
+[2] Listar Contas
 => """
 
 saldo = 0
@@ -18,6 +19,10 @@ extrato = ""
 limite = 500
 numero_saques = 0
 correntistas = {}
+conta = {}
+numero = 0000
+contas = {}
+id = 0
 
 def deposito(saldo, /):
     valor = float(input("Informe o valor do depósito: "))
@@ -105,15 +110,58 @@ def cadastrar_correntista():
     print(f"Correntista Cadastrado com sucesso")
     return correntista   
 
+def abrir_conta(num):
+    agencia = "0001"
+    usuario = input("Digite um cpf: ")
+    novo_id = id
+    while True:
+        if len(correntistas) > 0:
+            if usuario in correntistas:
+                print("\n Usuário encontrado!")
+                print(correntistas[usuario]["Nome"])
+                print("Confirma o usuário? O Sistema gerará um número de conta automaticamente")
+                choice = """
+                [1] Sim
+                [2] Não
+                => """
+                opcao = input(choice)
+                if opcao == "1":
+                    num += 1
+                    novo_id += 1
+                    conta = {novo_id: {"Agência": agencia, "Conta": num, "Correntista": correntistas[usuario]["Nome"]}}
+                    print("Conta cadastrada com sucesso!")
+                    return novo_id, conta, num
+                else:
+                    print("Conta não cadastrada. Operação de abertura finalizada")
+                    return 0
+            else:
+                print("Usuário não encontrado")
+                usuario = input("Digite um cpf: ")
+        else:
+            print("Nenhum cliente cadastrado. Cadastrar o cliente e depois abrir a conta")
+
 def listar_correntistas():
-    print("===========================  LISTAGEM DE CORRENTISTAS ===========================")
-    for cpf in correntistas:
-        print("CPF: ", cpf)
-        print("Nome: ", correntistas[cpf]["Nome"])
-        print("Data de Nascimento: ",correntistas[cpf]["Data Nascimento"])
-        print("Endereço: ",correntistas[cpf]["Endereço"])
-        print("******************************************************************************\n")
-    print("===========================  FIM DA LISTAGEM ====================================")
+    def imprimir(correntistas):
+        for cpf, dados in correntistas.items():
+            print("CPF:", cpf)
+            for chave, valor in dados.items():
+                print(chave + ":", valor)
+            print("******************************************************************************\n")
+    print("===========================  LISTAGEM DE CORRENTISTAS ===========================\n")
+    print("Não existem correntistas cadastrados." if not correntistas else imprimir(correntistas))
+    
+    print("===========================  FIM DA LISTAGEM =====================================\n")
+
+def listar_contas():
+    def imprimir(contas):
+        for id, dados in contas.items():
+            print("ID: ", id)
+            for chave, valor in dados.items():
+                print(chave + ":", valor)
+            print("******************************************************************************\n")
+    print("===========================  LISTAGEM DE CONTAS ==================================\n")
+    print("Não existem contas cadastradas." if not contas else imprimir(contas))
+    print("===========================  FIM DA LISTAGEM =====================================\n")
 
 def validar_data(data):
     try:
@@ -124,15 +172,27 @@ def validar_data(data):
 
 while True:
     opcao = input(menu) 
-    if opcao == "c":
+    if opcao == "a":
+        print('Opção ABERTURA DE CONTA selecionada\n')
+        novo_id, nova_conta, novo_numero = abrir_conta(numero)
+        if nova_conta != 0 and len(correntistas) > 0:
+            for chave, valor in nova_conta.items():
+                if chave not in contas:
+                    contas[chave] = valor 
+                    numero = novo_numero
+                    id = novo_id    
+    elif opcao == "c":
         print('Opção CADASTRAR CORRENTISTA selecionada\n')
         novo_correntista = cadastrar_correntista()
         for chave, valor in novo_correntista.items():
             if chave not in correntistas:
                 correntistas[chave] = valor
-    elif opcao == "l":
+    elif opcao == "1":
         print('Opção LISTAR CORRENTISTAS selecionada\n')
         listar_correntistas()
+    elif opcao == "2":
+        print('Opção LISTAR CONTAS selecionada\n')
+        listar_contas()
     elif opcao == "d":
         print('Opção DEPÓSITO selecionada\n')
         valor, saldo, movimento = deposito(saldo)
